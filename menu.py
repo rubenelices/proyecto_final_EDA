@@ -64,28 +64,78 @@ def personalizar_juego():
     Permite a los jugadores personalizar los colores del juego.
     """
     corriendo = True
+
+    # Definir las áreas de los botones
+    botones = {
+        "color_x": pygame.Rect(ANCHO // 2 - 100, 150, 200, 50),
+        "color_o": pygame.Rect(ANCHO // 2 - 100, 250, 200, 50),
+        "volver": pygame.Rect(ANCHO // 2 - 100, 450, 200, 50)
+    }
+
     while corriendo:
         VENTANA.fill(BLANCO)
         texto_centrado("Personalización", 50, NEGRO, ANCHO // 2, 50)
 
-        texto_centrado("Presiona 1 para cambiar el color de X.", 30, NEGRO, ANCHO // 2, 150)
-        texto_centrado("Presiona 2 para cambiar el color de O.", 30, NEGRO, ANCHO // 2, 200)
-        texto_centrado("Presiona 3 para cambiar el color del tablero.", 30, NEGRO, ANCHO // 2, 250)
-        texto_centrado("Presiona ESC para volver al menú.", 30, NEGRO, ANCHO // 2, 400)
+        # Dibujar botones
+        for nombre, rect in botones.items():
+            color = configuracion[nombre] if nombre in configuracion else NEGRO
+            pygame.draw.rect(VENTANA, color, rect)
+            texto_centrado(
+                "Color X" if nombre == "color_x" else
+                "Color O" if nombre == "color_o" else
+                "Volver al Menú",
+                30, BLANCO, rect.centerx, rect.centery
+            )
 
-        texto_centrado(f"Color X: {seleccion_color(configuracion['color_x'])}", 30, configuracion['color_x'], ANCHO // 2, 450)
-        texto_centrado(f"Color O: {seleccion_color(configuracion['color_o'])}", 30, configuracion['color_o'], ANCHO // 2, 500)
-        texto_centrado(f"Color del tablero: {seleccion_color(configuracion['color_tablero'])}", 30, configuracion['color_tablero'], ANCHO // 2, 550)
+        # Manejar eventos
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:  # Clic izquierdo
+                pos = pygame.mouse.get_pos()
+                if botones["color_x"].collidepoint(pos):
+                    configuracion["color_x"] = cambiar_color()
+                elif botones["color_o"].collidepoint(pos):
+                    configuracion["color_o"] = cambiar_color()
+                elif botones["volver"].collidepoint(pos):
+                    corriendo = False
+
+        pygame.display.flip()
+
+
+def cambiar_color():
+    """
+    Muestra un menú simple para seleccionar colores.
+    """
+    opciones = [ROJO, AZUL, VERDE, GRIS, NEGRO]
+    indice = 0
+    seleccionando = True
+    while seleccionando:
+        VENTANA.fill(BLANCO)
+        texto_centrado("Selecciona un color", 50, NEGRO, ANCHO // 2, 50)
+
+        color = opciones[indice]
+        pygame.draw.rect(VENTANA, color, (ANCHO // 2 - 50, ALTO // 2 - 50, 100, 100))
+
+        texto_centrado("Presiona Izquierda/Derecha para cambiar.", 30, NEGRO, ANCHO // 2, 450)
+        texto_centrado("Presiona Enter para seleccionar.", 30, NEGRO, ANCHO // 2, 500)
 
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if evento.type == pygame.KEYDOWN:
-                if evento.key == pygame.K_ESCAPE:
-                    corriendo = False
+                if evento.key == pygame.K_LEFT:
+                    indice = (indice - 1) % len(opciones)
+                elif evento.key == pygame.K_RIGHT:
+                    indice = (indice + 1) % len(opciones)
+                elif evento.key == pygame.K_RETURN:
+                    seleccionando = False
 
         pygame.display.flip()
+
+    return opciones[indice]
 
 
 def seleccion_color(color):
@@ -132,7 +182,7 @@ def menu_principal():
                 "Iniciar Juego" if nombre == "iniciar" else
                 "Instrucciones" if nombre == "instrucciones" else
                 "Personalizar" if nombre == "personalizar" else
-                "Salir", 
+                "Salir",
                 30, BLANCO, rect.centerx, rect.centery
             )
 
